@@ -1,0 +1,158 @@
+%-----------------水面有逆风---------------%
+%--------QUICK-------%
+clc;
+X=4;
+Y=4;
+T=1; 
+Nx=800;
+Ny=800;
+M=1000;
+dx=X/Nx;
+dy=Y/Ny;
+dt=T/M; 
+DX=0.0001;
+DY=0.0001;
+sigmax=0.1;
+sigmay=0.4;
+x0=2;
+y0=2;
+
+
+x11=zeros(1,Nx+1); 
+y1=zeros(1,Ny+1);
+c0=zeros(Nx+1,Ny+1);
+c=zeros(Nx+1,Ny+1);
+cexa=zeros(Nx+1,Ny+1);
+u1=zeros(1,Ny+1);
+u=0.1;
+v=0;
+
+%----------计算垂向流速-----------%
+% syms x a;
+% fx=sin(x)/x;
+% for n=1:Ny+1
+%     y1(n)=(n-1)*dy;
+%     u1(n)=int(fx,x,0,pi*(2*y1(n)-1));
+%     if n~=1&&n~=Ny+1
+%         u(:,n)=0.3048*0.315*(5.51/0.315+0.208*(1/0.39*(log(2*y1(n))-log(2-2*y1(n)))+(-0.0232-2/3/pi)/0.39*u1(n))+0.792*(1/0.39*log(4/3*y1(n)*(2-y1(n)))+0.0232/0.39*cos(pi*y1(n))));
+%     elseif n==Ny+1
+%         u(:,n)=2.06;
+%     end
+% end
+
+
+% u1 = importdata('velocity.txt');
+% for n=1:Ny+1
+%     y1(n)=(n-1)*dy;
+%     u(:,n)=u1(n);
+% end
+
+figure(11)
+plot(u(1,:),y1,'r')
+% % % 
+% fileID = fopen('velocity.txt', 'w');  % 打开一个用于写入的文本文件
+% % % 
+% fprintf(fileID, '%.5f\n', u(1, :)');  % 写入第一行的每个元素并保存为一列，保留 5 位有效数字
+% % % 
+% fclose(fileID);  % 关闭文本文件
+
+
+
+%场变量初始化
+for i=1:Nx+1
+    x11(i)=dx*(i-1); 
+    for j=1:Ny+1
+        y1(j)=dy*(j-1);
+        c0(i,j)=exp(-(x11(i)-x0)^2/2/sigmax/sigmax-(y1(j)-y0)^2/2/sigmay/sigmay);
+    end
+end
+c=c0;
+figure(1);
+contourf(x11,y1,c0')
+xlabel('x');
+ylabel('y');
+title('Initial distribution'); 
+
+for n=1:M
+     
+    for i=3:Nx
+        for j=3:Ny
+            
+%             if c0(i+1,j)~=c0(i,j)
+%                 a_i_plu=(u(i+1,j)*c0(i+1,j)-u(i,j)*c0(i,j))/(c0(i+1,j)-c0(i,j));
+%             else
+%                 a_i_plu=u(i,j)*c0(i,j);
+%             end
+%             if c0(i-1,j)~=c0(i,j)
+%                 a_i_min=(u(i,j)*c0(i,j)-u(i-1,j)*c0(i-1,j))/(c0(i,j)-c0(i-1,j));
+%             else
+%                 a_i_min=u(i,j)*c0(i,j);
+%             end
+%             
+%             if a_i_plu>0
+%                 Fx_i_plu_1_2=0.5*(c0(i+1,j)*u(i+1,j)+c0(i,j)*u(i,j))-0.25*(c0(i+2,j)*u(i+2,j)-c0(i+1,j)*u(i+1,j)-c0(i,j)*u(i,j)+c0(i-1,j)*u(i-1,j))+0.25*(c0(i+2,j)*u(i+2,j)-3*u(i+1,j)*c0(i+1,j)+3*u(i,j)*c0(i,j)-c0(i-1,j)*u(i-1,j));
+%             elseif a_i_plu<0
+%                 Fx_i_plu_1_2=0.5*(c0(i+1,j)*u(i+1,j)+c0(i,j)*u(i,j))-0.25*(c0(i+2,j)*u(i+2,j)-c0(i+1,j)*u(i+1,j)-c0(i,j)*u(i,j)+c0(i-1,j)*u(i-1,j))-0.25*(c0(i+2,j)*u(i+2,j)-3*u(i+1,j)*c0(i+1,j)+3*u(i,j)*c0(i,j)-c0(i-1,j)*u(i-1,j));
+%             else
+%                 Fx_i_plu_1_2=0.5*(c0(i+1,j)*u(i+1,j)+c0(i,j)*u(i,j))-0.25*(c0(i+2,j)*u(i+2,j)-c0(i+1,j)*u(i+1,j)-c0(i,j)*u(i,j)+c0(i-1,j)*u(i-1,j));
+%             end
+%             
+%             if a_i_min>0
+%                 Fx_i_min_1_2=0.5*(c0(i,j)*u(i,j)+c0(i-1,j)*u(i-1,j))-0.25*(c0(i+1,j)*u(i+1,j)-c0(i,j)*u(i,j)-c0(i-1,j)*u(i-1,j)+c0(i-2,j)*u(i-2,j))+0.25*(c0(i+1,j)*u(i+1,j)-3*u(i,j)*c0(i,j)+3*u(i-1,j)*c0(i-1,j)-c0(i-2,j)*u(i-2,j));
+%             elseif a_i_min<0
+%                 Fx_i_min_1_2=0.5*(c0(i,j)*u(i,j)+c0(i-1,j)*u(i-1,j))-0.25*(c0(i+1,j)*u(i+1,j)-c0(i,j)*u(i,j)-c0(i-1,j)*u(i-1,j)+c0(i-2,j)*u(i-2,j))-0.25*(c0(i+1,j)*u(i+1,j)-3*u(i,j)*c0(i,j)+3*u(i-1,j)*c0(i-1,j)-c0(i-2,j)*u(i-2,j));
+%             else
+%                 Fx_i_min_1_2=0.5*(c0(i,j)*u(i,j)+c0(i-1,j)*u(i-1,j))-0.25*(c0(i+1,j)*u(i+1,j)-c0(i,j)*u(i,j)-c0(i-1,j)*u(i-1,j)+c0(i-2,j)*u(i-2,j));
+%             end      
+
+            %Fx_i_plu_1_2=-1/8*c0(i-1,j)*u+3/4*c0(i,j)*u+3/8*c0(i+1,j)*u;
+            %Fx_i_min_1_2=-1/8*c0(i-2,j)*u+3/4*c0(i-1,j)*u+3/8*c0(i,j)*u;
+            
+            %Fy_i_plu_1_2=-1/8*c0(i,j-1)*v+3/4*c0(i,j)*v+3/8*c0(i,j+1)*v;
+            %Fy_i_min_1_2=-1/8*c0(i,j-2)*v+3/4*c0(i,j-1)*v+3/8*c0(i,j)*v;
+            
+%             Fx_i_plu_1_2 = u(i, j)*c0(i, j) + abs(u(i, j))*(c0(i, j) - c0(i-1, j))/2;
+%             Fx_i_min_1_2 = u(i-1, j)*c0(i-1, j) + abs(u(i-1, j))*(c0(i-1, j) - c0(i-2, j))/2;
+            
+            
+            %Fx_i_plu_1_2=2/3*c0(i,j)*u(i,j)-0.5*c0(i-1,j)*u(i-1,j);
+            %Fx_i_min_1_2=2/3*c0(i-1,j)*u(i-1,j)-0.5*c0(i-2,j)*u(i-2,j);
+   %%%%%%%%%%%%%%% 计算扩散项
+        diffu_x=c0(i+1,j)-2*c0(i,j)+c0(i-1,j);
+        diffu_y=c0(i,j+1)-2*c0(i,j)+c0(i,j-1);
+ %%%%%%%%%%%%%
+        c(i,j)=c0(i,j)-(dt/dx)*( Fx_i_plu_1_2-Fx_i_min_1_2)-(dt/dy)*( Fy_i_plu_1_2-Fy_i_min_1_2)+(dt/(dx^2))*DX*diffu_x+(dt/(dy^2))*DY*diffu_y;
+       
+        end
+    end
+    c(2,:)=0;
+    c(1,:)=0; 
+    c(Nx+1,:)=0;
+    c(:,Ny+1)=0;
+    c(:,2)=0;
+    c(:,1)=0;
+   
+   c0=c;
+    
+end
+
+for i=1:Nx+1
+    x11(i)=(i-1)*dx;
+    for j=1:Ny+1
+        y1(j)=(j-1)*dy;
+        cexa(i,j)=(sigmax/sqrt(sigmax^2+2*DX*1))*(sigmay/sqrt(sigmay^2+2*DY*1))*exp(-((x11(i)-(x0+u*1)).^2)/2/(sigmax*sigmax+2*DX*1)-((y1(j)-(y0+v*1)).^2)/2/(sigmay*sigmay+2*DY*1));
+    end
+end
+figure(2)
+contour(x11,y1,c',10)
+hold on
+contour(x11,y1',c',10)%-----------绘制10条等高线-------------%
+hold on
+figure(3)
+mesh(x11,y1,c')
+figure(4)
+plot(x11,cexa(:,401),'r',x11,c(:,401), 'm-*')
+y11=y11';
+c55=c';
+figure(5)
+plot(y1,c(537,:),'r')
